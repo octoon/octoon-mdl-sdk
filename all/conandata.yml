@@ -1,0 +1,8 @@
+sources:
+  "2021.1.2":
+    url: "https://github.com/NVIDIA/MDL-SDK/archive/refs/tags/2021.1.2.zip"
+    sha256: "3d20b85366e08690068df521cd01bdcf4c16457badbe05b0f1617eda8f3f9601"
+patches:
+  "2021.1.2":
+    - patch_file: "patches/001-FreeImage.patch"
+      base_path: "source_subfolder"

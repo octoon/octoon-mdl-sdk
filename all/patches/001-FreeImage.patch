@@ -1,0 +1,19 @@
+diff --git a/cmake/find/find_freeimage_ext.cmake b/cmake/find/find_freeimage_ext.cmake
+index b11573a..0ee6897 100644
+--- a/cmake/find/find_freeimage_ext.cmake
++++ b/cmake/find/find_freeimage_ext.cmake
+@@ -56,12 +56,14 @@ function(FIND_FREEIMAGE_EXT)
+                 HINTS 
+                     ${FREEIMAGE_DIR}
+                     ${FREEIMAGE_DIR}/Dist/x64
++                    ${FREEIMAGE_DIR}/lib
+                 )
+ 
+             find_file(_FREEIMAGE_SHARED "${CMAKE_SHARED_LIBRARY_PREFIX}freeimage${CMAKE_SHARED_LIBRARY_SUFFIX}" 
+                 HINTS 
+                     ${FREEIMAGE_DIR}
+                     ${FREEIMAGE_DIR}/Dist/x64
++                    ${FREEIMAGE_DIR}/lib
+                 )
+ 
+         elseif(LINUX OR MACOSX)
