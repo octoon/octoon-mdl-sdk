@@ -31,7 +31,7 @@ class MdlConan(ConanFile):
 
     generators = "cmake"
 
-    requires = "boost/1.79.0", "freeimage/3.18.0"
+    requires = "boost/1.73.0", "freeimage/3.18.0", "glew/2.2.0"
 
     @property
     def _source_subfolder(self):
@@ -50,9 +50,13 @@ class MdlConan(ConanFile):
 
     def export_sources(self):
         self.copy("CMakeLists.txt")
+
+        self.copy("externals/clang/windows/clang.exe")
+        self.copy("externals/clang/linux/clang")
+
         for patch in self.conan_data.get("patches", {}).get(self.version, []):
             self.copy(patch["patch_file"])
-    
+        
     def validate(self):
         if self.settings.os not in ["Windows", "Linux", "Macos", "Android", "iOS"]:
             raise ConanInvalidConfiguration("Current os is not supported")
@@ -79,15 +83,22 @@ class MdlConan(ConanFile):
         cmake.definitions["CMAKE_BUILD_TYPE"]=self.settings.build_type
         cmake.definitions["CMAKE_POSITION_INDEPENDENT_CODE"] = self.options.get_safe("fPIC", False)
 
-
         cmake.definitions["MDL_BASE_FOLDER"] = os.path.join(self.build_folder, self._source_subfolder)
         cmake.definitions["MDL_INCLUDE_FOLDER"] = os.path.join(self.build_folder, self._source_subfolder, "include")
         cmake.definitions["MDL_SRC_FOLDER"] = os.path.join(self.build_folder, self._source_subfolder, "src")
         cmake.definitions["MDL_EXAMPLES_FOLDER"] = os.path.join(self.build_folder, self._source_subfolder, "examples")
         cmake.definitions["MDL_BUILD_SDK_EXAMPLES"] = False
         cmake.definitions["MDL_ENABLE_CUDA_EXAMPLES"] = False
+        cmake.definitions["MDL_ENABLE_OPENGL_EXAMPLES"] = False
+        cmake.definitions["MDL_ENABLE_QT_EXAMPLES"] = False
+        cmake.definitions["MDL_ENABLE_D3D12_EXAMPLES"] = False
 
-        freeimage = self.dependencies["freeimage/3.18.0"]
+        if self.settings.os == "Windows":
+            cmake.definitions["clang_PATH"] = os.path.join(self.build_folder, "externals/clang/clang.exe")
+        else:
+            cmake.definitions["clang_PATH"] = os.path.join(self.build_folder, "externals/clang/clang")
+        
+        freeimage = self.dependencies["freeimage"]
         cmake.definitions["FREEIMAGE_DIR"] = freeimage.package_folder
 
         cmake.configure(
@@ -105,6 +116,17 @@ class MdlConan(ConanFile):
             os.mkdir("patches")
         for patch in self.conan_data.get("patches", {}).get(self.version, []):
             shutil.copy(os.path.join(self.source_folder, patch["patch_file"]), "patches")
+        
+        if not os.path.exists("externals"):
+            os.mkdir("externals")
+        if not os.path.exists("externals/clang"):
+            os.mkdir("externals/clang")
+        if self.settings.os == "Windows":
+            shutil.copy(os.path.join(self.source_folder, "externals/clang/windows/clang.exe"), "externals/clang/clang.exe")
+        elif self.settings.os == "Linux":
+            shutil.copy(os.path.join(self.source_folder, "externals/clang/linux/clang.exe"), "externals/clang/clang")
+        else:
+            shutil.copy(os.path.join(self.source_folder, "externals/clang/linux/clang.exe"), "externals/clang/clang")
         
         # Copy source code
         subfolders_to_copy = [
@@ -149,18 +171,16 @@ class MdlConan(ConanFile):
         }.get(str(self.settings.os))
 
     def package(self):
-        nvcloth_source_subfolder = os.path.join(self.build_folder, self._source_subfolder)
-        nvcloth_build_subfolder = os.path.join(self.build_folder, self._build_subfolder)
+        mdl_source_subfolder = os.path.join(self.build_folder, self._source_subfolder)
+        mdl_build_subfolder = os.path.join(self.build_folder, self._build_subfolder)
 
-        self.copy(pattern="NvCloth/license.txt", dst="licenses", src=nvcloth_source_subfolder, keep_path=False)
-        self.copy("*.h", dst="include", src=os.path.join(nvcloth_source_subfolder, "NvCloth", "include"))
-        self.copy("*.h", dst="include", src=os.path.join(nvcloth_source_subfolder, "NvCloth", "extensions", "include"))
-        self.copy("*.h", dst="include", src=os.path.join(nvcloth_source_subfolder, "PxShared", "include"))
-        self.copy("*.a", dst="lib", src=nvcloth_build_subfolder, keep_path=False)
-        self.copy("*.lib", dst="lib", src=nvcloth_build_subfolder, keep_path=False)
-        self.copy("*.dylib*", dst="lib", src=nvcloth_build_subfolder, keep_path=False)
-        self.copy("*.dll", dst="bin", src=nvcloth_build_subfolder, keep_path=False)
-        self.copy("*.so", dst="lib", src=nvcloth_build_subfolder, keep_path=False)
+        self.copy(pattern="LICENSE.md", dst="licenses", src=mdl_source_subfolder, keep_path=False)
+        self.copy("*.h", dst="include", src=os.path.join(mdl_source_subfolder, "include"))
+        self.copy("*.a", dst="lib", src=mdl_build_subfolder, keep_path=False)
+        self.copy("*.lib", dst="lib", src=mdl_build_subfolder, keep_path=False)
+        self.copy("*.dylib*", dst="lib", src=mdl_build_subfolder, keep_path=False)
+        self.copy("*.dll", dst="bin", src=mdl_build_subfolder, keep_path=False)
+        self.copy("*.so", dst="lib", src=mdl_build_subfolder, keep_path=False)
 
     def package_info(self):
         self.cpp_info.libs = tools.collect_libs(self)

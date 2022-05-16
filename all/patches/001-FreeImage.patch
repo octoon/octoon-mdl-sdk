@@ -1,5 +1,5 @@
 diff --git a/cmake/find/find_freeimage_ext.cmake b/cmake/find/find_freeimage_ext.cmake
-index b11573a..0ee6897 100644
+index b11573a..5f199ae 100644
 --- a/cmake/find/find_freeimage_ext.cmake
 +++ b/cmake/find/find_freeimage_ext.cmake
 @@ -56,12 +56,14 @@ function(FIND_FREEIMAGE_EXT)
@@ -13,7 +13,16 @@ index b11573a..0ee6897 100644
                  HINTS 
                      ${FREEIMAGE_DIR}
                      ${FREEIMAGE_DIR}/Dist/x64
-+                    ${FREEIMAGE_DIR}/lib
++                    ${FREEIMAGE_DIR}/bin
                  )
  
          elseif(LINUX OR MACOSX)
+@@ -91,7 +93,7 @@ function(FIND_FREEIMAGE_EXT)
+     endif()
+ 
+     # error if dependencies can not be resolved
+-    if(NOT EXISTS ${_FREEIMAGE_INCLUDE} OR (WINDOWS AND NOT EXISTS ${_FREEIMAGE_LIB}) OR NOT EXISTS ${_FREEIMAGE_SHARED})
++    if(NOT EXISTS ${_FREEIMAGE_INCLUDE} OR (WINDOWS AND NOT EXISTS ${_FREEIMAGE_LIB}))
+         message(STATUS "FREEIMAGE_DIR: ${FREEIMAGE_DIR}")
+         message(STATUS "_FREEIMAGE_HEADER_FILE: ${_FREEIMAGE_HEADER_FILE}")
+         message(STATUS "_FREEIMAGE_INCLUDE: ${_FREEIMAGE_INCLUDE}")
